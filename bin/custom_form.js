@@ -1,6 +1,6 @@
 (function($){
 
-  var $$ = {fn:{}},  
+  var $$ = {fn:{}},
   METHODS = ["init","checked","update","select","disabled"],
   OVERRIDES = {
     disabled:function(option){
@@ -19,7 +19,7 @@
       return result
     }
   };
-  
+
   $$._browser = $.browser || (function(){
     var a,c,b;
     b=function(e){e=e.toLowerCase();var d=/(chrome)[ \/]([\w.]+)/.exec(e)||/(webkit)[ \/]([\w.]+)/.exec(e)||/(opera)(?:.*version|)[ \/]([\w.]+)/.exec(e)||/(msie) ([\w.]+)/.exec(e)||e.indexOf("compatible")<0&&/(mozilla)(?:.*? rv:([\w.]+)|)/.exec(e)||[];return{browser:d[1]||"",version:d[2]||"0"}};
@@ -29,7 +29,7 @@
     else{if(c.webkit){c.safari=true}}
     return c;
   })();
-  
+
   // =========
   // = Utils =
   // =========
@@ -43,7 +43,7 @@
   // ===============
   // = FormElement =
   // ===============
-  
+
   // ==================
   // = Static Methods =
   // ==================
@@ -54,29 +54,29 @@
       if(key == "version") version = parseInt(b.version)
       else browser = key;
     }
-   return browser+" "+browser+version+(b.msie ? "" : " not_msie"); 
+   return browser+" "+browser+version+(b.msie ? "" : " not_msie");
   }();
   FormElement.build = function(element){
     var type, klass;
     if(element.is("select")) type = "select";
     else type = "input_"+element.attr("type");
-    
+
     if(!(klass = this.available_classes[type])) throw("No class available to build element of type "+type)
     return new klass(type+"_"+FormElement.total_instances++);
   }
-  
+
   FormElement.available_classes = {};
   FormElement.register_class = function(identifier,klass){
     this.available_classes[identifier] = klass
   }
-  
+
   // =================
   // = Class Methods =
   // =================
   function FormElement(identifier){this.identifier = identifier;}
-  
+
   var f = FormElement.prototype;
-  
+
   $.extend(f,{
     is_disabled:false,
     get_element:function(){return $$[this.identifier].element;},
@@ -84,11 +84,11 @@
     set:function(object,label){ $$[this.identifier].children[label] = object; return object; },
     get_id:function(){return this.identifier;},
     kill:function(){return this.identifier;},
-    
+
     active_replacement_class:function(condition){
       this.replacement[condition ? "addClass" : "removeClass"]("checked_"+this.element_type)
     },
-    
+
     init:function(options){
       var element = this.get_element(), replacement, element_id = element.attr("id");
       this.set_parameters(element,options);
@@ -129,21 +129,21 @@
       this.get("replacement")[focus ? "addClass" : "removeClass"]("focus_"+this.element_type);
     },
     change:function(){
-      
+
     },
-    label_handler:function(event){ 
+    label_handler:function(event){
       if(event.target != this) return;
-      event.preventDefault();  
+      event.preventDefault();
       event.data.get_element().triggerHandler("change");
     },
-    hover_handler:     function(event){ 
-      event.data.hover(true)      
+    hover_handler:     function(event){
+      event.data.hover(true)
     },
     out_handler:       function(event){ event.data.hover(false)     },
     mouse_up_handler:  function(event){ event.data.mouse_in(false)  },
     mouse_down_handler:function(event){ event.data.mouse_in(true)   },
-    
-    hover:function(hover){ 
+
+    hover:function(hover){
       if(this.is_disabled) return;
       this.get("replacement")[hover ? "addClass" : "removeClass"]("hover_"+this.element_type);
     },
@@ -151,15 +151,15 @@
       if(this.is_disabled) return;
       this.get("replacement")[down ? "addClass" : "removeClass"]("active_"+this.element_type)
     },
-    
+
     disabled:function(option,element,replacement){
-      var element = (element) || (this.get_element()), replacement; 
+      var element = (element) || (this.get_element()), replacement;
       switch(option){
         case true:
         case false:
           replacement = (replacement) || (this.get("replacement"))
           element.attr("disabled",option);
-          replacement[option ? "addClass" : "removeClass"]("disabled_"+this.element_type); 
+          replacement[option ? "addClass" : "removeClass"]("disabled_"+this.element_type);
           this.is_disabled = option;
           return option;
         case "none":
@@ -206,7 +206,7 @@
     checked:function(checked,element,replacement){
       element = (element) || (this.get_element()); replacement = (replacement) || (this.get("replacement"));
       checked = checked == undefined ? !element.is(":checked") : checked;
-      if(!this.uncheckeable || (this.uncheckeable && checked)){ 
+      if(!this.uncheckeable || (this.uncheckeable && checked)){
         element.prop("checked",checked);
         element.trigger("change");
         // if(checked) element.trigger("change");
@@ -225,7 +225,7 @@
       event.data.update($(this));
     },
     update:function(element,replacement){
-      var element = (element || this.get_element()), 
+      var element = (element || this.get_element()),
           klass = "checked_"+this.element_type, checked = element.is(":checked"),
           replacement = (replacement || this.get("replacement"));
       this.disable_if_disabled(element);
@@ -235,11 +235,11 @@
   });
 
   FormElement.register_class(Checkbox.IDENTIFIER,Checkbox)
-  
+
   // =========
   // = Radio =
   // =========
-  
+
   function Radio(identifier){this.constructor.call(this,identifier);}
   Radio.IDENTIFIER = "input_radio";
   var r = Radio.prototype = new Checkbox();
@@ -248,30 +248,32 @@
     uncheckeable:true,
     element_type:"radio",
     update:function(element,replacement){
-       var element = (element || this.get_element()), 
+       var element = (element || this.get_element()),
           klass = "checked_"+this.element_type, checked = element.is(":checked"),
           replacement = (replacement || this.get("replacement"));
       this.disable_if_disabled(element);
-      
+
       if(checked){
         var checked_radios = $("."+klass).has("[name='"+this.element_name+"']").not(this.element_id);
         if(checked_radios.length != 0)
             checked_radios.removeClass(klass)
         replacement.addClass(klass)
-      } 
+      } else {
+        replacement.removeClass(klass);
+      }
     }
   })
-  
+
   FormElement.register_class(Radio.IDENTIFIER,Radio)
 
   // ==========
   // = Select =
   // ==========
-  
+
   FormElement.element_border_width = function(element){
     return parseInt(element.css("border-left-width"))-parseInt(element.css("border-right-width"));
   }
-  
+
   function Select(identifier){this.constructor.call(this,identifier);}
   Select.IDENTIFIER = "select";
 
@@ -290,11 +292,11 @@
           select_content = replacement.find('.select_content'),
           select_label = this.set($(".select_label",replacement),"select_label"),
           styles = {
-            width:this.element_width-css_num(replacement,"border-left-width")-css_num(replacement,"border-right-width")            
+            width:this.element_width-css_num(replacement,"border-left-width")-css_num(replacement,"border-right-width")
          };
       element.css(styles); replacement.css(styles);
-      var select_button = $(".select_button",replacement);  
-      select_label.css({ 
+      var select_button = $(".select_button",replacement);
+      select_label.css({
         width: styles.width-select_button.outerWidth()-css_num(select_content,"border-left-width")-css_num(select_content,"border-right-width")-css_num(select_label,"border-right-width")-css_num(select_label,"border-left-width")
       });
     },
@@ -313,13 +315,13 @@
     },
     init_replacement:function(element,replacement){
       var select_label = this.set($(".select_label",replacement),"select_label");
-    
+
       if(!this.responsive){
         this.redraw();
       }else{
         replacement.addClass("responsive_select")
       }
-    
+
       element.bind("change",this,this.select_change)
     },
     init_mouse_events:function(element,replacement){
@@ -355,7 +357,7 @@
       this.update();
     }
   });
-  
+
   FormElement.register_class(Select.IDENTIFIER,Select)
 
   // ========
@@ -401,7 +403,7 @@
       }
     },
     mouse_trigger:function(){ return this.get_element(); },
-    file_change:function(event){ event.data.update_label(); },  
+    file_change:function(event){ event.data.update_label(); },
     update_label:function(){
       var text = this.get_element().val()
       if(!text.match(/\S/)) text = this.label;
@@ -413,11 +415,11 @@
       element.trigger("change");
     }
   });
-  
+
   FormElement.register_class(File.IDENTIFIER,File)
 
   $$.fn.ie6 = function(){return $$._browser.msie && parseInt($$._browser.version) <= 6}
-  
+
   $$.fn.ie6_instance = function(){
     return new function(){
       this.init = this.execute = function(elements){return elements};
@@ -426,18 +428,18 @@
 
   function CustomForm(){
     this.init = function(elements, options){
-      var self = this, options = $.extend({ 
+      var self = this, options = $.extend({
         file_button:"Choose file",
         file_label:"No file chosen",
         responsive_select:false,
         responsive_file:false
       },(options || {}));
-      elements = elements.each(function(){ 
+      elements = elements.each(function(){
         // Don't initialize if it is is a select and it's size is not 0 or if the plugin has already been initalized in this element
         if ((this.nodeName == 'SELECT' && this.size > 0) || this.$$custom_form_identifier) return true;
-        this.$$custom_form_identifier = self.new_element(this).init(options).identifier;      
+        this.$$custom_form_identifier = self.new_element(this).init(options).identifier;
       });
-      
+
       return elements;
     };
     this.execute = function execute(elements,arguments){
@@ -453,7 +455,7 @@
     };
     this.new_element = function(element,options){
       var $element = $(element),
-          instance = FormElement.build($element,options), 
+          instance = FormElement.build($element,options),
           id = instance.get_id();
       this.register_instance(id,instance,$element);
       return instance;
@@ -471,20 +473,20 @@
       delete $$[label];
     }
   }
-  
+
   CustomForm.get_custom_form_instance = function(){
     if(!this.instance)
       this.instance = !$$.fn.ie6() ? new CustomForm() : $$.fn.ie6_instance();
     return this.instance;
   }
-  
-  
+
+
   $.fn.custom_form = function( method ) {
     var instance = CustomForm.get_custom_form_instance();
     if((typeof method != "string") || !method)
       return instance.init(this,method /*options*/);
-    else 
+    else
       return instance.execute(this,arguments);
   };
-  
+
 })(jQuery)
